@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de QR Code Personalizado</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 40px;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 50%;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="color"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .qr-code-preview {
+            width: 45%;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .qr-code-preview img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .form-container, .qr-code-preview {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="form-container">
+        <h2>Gerador de QR Code</h2>
+        <form id="qrForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="text">URL do site *</label>
+                <input type="text" id="text" name="text" placeholder="Digite o URL" required>
+            </div>
+            <div class="form-group">
+                <label for="label_text">Nome do QR Code</label>
+                <input type="text" id="label_text" name="label_text" placeholder="Nome do QR Code">
+            </div>
+            <div class="form-group">
+                <label for="front_color">Cor do QR Code</label>
+                <input type="color" id="front_color" name="front_color" value="#000000">
+            </div>
+            <div class="form-group">
+                <label for="back_color">Cor de Fundo</label>
+                <input type="color" id="back_color" name="back_color" value="#FFFFFF">
+            </div>
+            <div class="form-group">
+                <label for="border_color">Cor da Moldura</label>
+                <input type="color" id="border_color" name="border_color" value="#FFFFFF">
+            </div>
+            <div class="form-group">
+                <label for="label_color">Cor do Texto</label>
+                <input type="color" id="label_color" name="label_color" value="#000000">
+            </div>
+            <div class="form-group">
+                <label for="logo">Logotipo (PNG)</label>
+                <input type="file" id="logo" name="logo" accept="image/png">
+            </div>
+        </form>
+    </div>
+    <div class="qr-code-preview">
+        <h2>Pré-visualização do QR Code</h2>
+        <div id="qrCodeImage">
+            <p>A visualização do QR Code aparecerá aqui.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function generateQRCode() {
+        const formData = new FormData(document.getElementById("qrForm"));
+        const previewDiv = document.getElementById("qrCodeImage");
+        previewDiv.innerHTML = `<p>Gerando QR Code...</p>`;
+
+        try {
+            const response = await fetch("/generate", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                previewDiv.innerHTML = `<img src="${data.qr_image_url}" alt="QR Code">`;
+            } else {
+                previewDiv.innerHTML = `<p>Erro ao gerar QR Code.</p>`;
+            }
+        } catch (error) {
+            previewDiv.innerHTML = `<p>Erro de conexão. Tente novamente mais tarde.</p>`;
+        }
+    }
+
+    let timer;
+    document.getElementById("qrForm").addEventListener("input", () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            generateQRCode();
+        }, 500);
+    });
+
+    document.getElementById("logo").addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (file && !file.type.startsWith("image/png")) {
+            alert("Por favor, envie apenas arquivos PNG.");
+            event.target.value = "";
+        } else {
+            generateQRCode();
+        }
+    });
+</script>
+</body>
+</html>
