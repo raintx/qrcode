@@ -1,7 +1,10 @@
 async function generateQRCode() {
     const formData = new FormData(document.getElementById("qrForm"));
     const previewDiv = document.getElementById("qrCodeImage");
+    const downloadButton = document.getElementById("downloadButton");
+
     previewDiv.innerHTML = `<p>Gerando QR Code...</p>`;
+    downloadButton.style.display = "none"; // Oculta o botão de download até o QR Code ser gerado
 
     try {
         const response = await fetch("/generate", {
@@ -11,7 +14,17 @@ async function generateQRCode() {
 
         if (response.ok) {
             const data = await response.json();
-            previewDiv.innerHTML = `<img src="${data.qr_image_url}" alt="QR Code">`;
+            const qrImageUrl = data.qr_image_url;
+            previewDiv.innerHTML = `<img src="${qrImageUrl}" alt="QR Code">`;
+
+            // Atualiza o botão de download
+            downloadButton.style.display = "block"; // Exibe o botão de download
+            downloadButton.onclick = () => {
+                const link = document.createElement("a");
+                link.href = qrImageUrl;
+                link.download = "QRCode.png"; // Nome do arquivo ao fazer download
+                link.click();
+            };
         } else {
             previewDiv.innerHTML = `<p>Erro ao gerar QR Code.</p>`;
         }
