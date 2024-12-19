@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, url_for
+from waitress import serve  # Usando Waitress para rodar em produção
 import qrcode
 from qrcode.image.styles.moduledrawers import RoundedModuleDrawer
 from qrcode.image.styles.colormasks import SolidFillColorMask
@@ -124,4 +125,4 @@ def generate_qr():
     return jsonify({'qr_image_url': qr_image_url})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    serve(app, host='0.0.0.0', port=80)
